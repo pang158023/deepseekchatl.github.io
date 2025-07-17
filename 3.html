@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>DeepSeek-探索未至之境</title>
+  <link rel="icon" href="deepseek-color.png" type="png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f5f7fa;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .container { 
+      display: flex; 
+      flex: 1; 
+      overflow: hidden;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      background-color: white;
+      width: 100%;
+    }
+    .chat-header {
+      padding: 20px;
+      font-size: 18px;
+      color: #333;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+      background-color: white;
+    }
+    .chat-box {
+      flex: 1;
+      padding: 20px 12%;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 12px 15px;
+      border-radius: 10px;
+      line-height: 1.5;
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      max-width: 95%;
+    }
+    .user {
+      align-self: flex-end;
+      background-color: #eff6ff;
+      color: #404040;
+      text-align: justify; 
+      display: flex;
+    }
+    .bot {
+      align-self: flex-start;
+      background-color: transparent;
+      color: #404040;
+      text-align: justify;   
+      display: inline-block; 
+      max-width: 100%;
+      width: fit-content;
+    }
+    .bot-message-content {
+      display: inline-flex;
+      align-items: flex-start;
+    }
+    .bot .bot-icon {
+      height: 28px;
+      vertical-align: top;
+      margin-right: 8px;
+      margin-top: 2px;
+    }
+    .bot-text {
+      display: inline-block;
+      vertical-align: top;
+    }
+    .bot-text p {
+      margin: 0.5em 0;
+    }
+    .disclaimer {
+      font-size: 12px;
+      color: #E4773D;
+      background-color: #E4773D0D;
+      padding: 8px 12px 8px 36px;
+      border:  solid 1px;
+      border-color: rgba(228, 119, 61, .1);
+      border-radius: 6px;
+      margin-top: 8px;
+      display: inline-block;
+      position: relative;
+      margin-left: 38px;
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+    }
+    .disclaimer:before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      background-image: url('感叹号.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    .input-area {
+      display: flex;
+      padding: 10px 15px;
+      background-color: white;
+      position: sticky;
+      bottom: 0;
+      justify-content: center;
+    }
+    .input-container {
+      width: 76%;
+      display: flex;
+      align-items: center;
+      background-color: #f3f4f6;
+      border-radius: 12px;
+      padding: 8px 15px;
+      border: 1px solid #e0e0e0;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      background-color: transparent;
+      color: #000;
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+    }
+    .send-btn {
+      margin-left: 10px;
+      width: 32px;
+      height: 32px;
+      background-image: url('向上发送.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+    }
+    .footer-tip {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      padding: 8px 4px;
+      background-color: white;
+      border-top: none;
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+    }
+    .typing-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background-color: #256029;
+      animation: blink 1s infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .ellipsis {
+      display: inline-flex;
+      align-items: center;
+    }
+    .ellipsis span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #256029;
+      margin: 0 2px;
+      animation: bounce 1.5s infinite ease-in-out;
+    }
+    .ellipsis span:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .ellipsis span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .ellipsis span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .input-area input::placeholder {
+      opacity: 0.3;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="main">
+      <div class="chat-header">
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
+          <img src="deepseek-color.png" alt="logo" style="height: 30px; margin-right: 10px;">
+          <span style="font-size: 20px; font-weight: 500;">我是 DeepSeek，很高兴见到你！</span>
+        </div>
+        <div style="font-size: 14px; color: #555;">
+          我可以帮你写代码、读文件、写作各种创意内容，请把你的任务交给我吧~
+        </div>
+      </div>
+      <div id="chatBox" class="chat-box"></div>
+      <div class="input-area">
+        <div class="input-container">
+          <input type="text" id="userInput" placeholder="给 DeepSeek 发送消息" />
+          <button class="send-btn" onclick="sendMessage()"></button>
+        </div>
+      </div>
+      <div class="footer-tip">内容由 AI 生成，请仔细甄别</div>
+    </div>
+  </div>
+
+  <script>
+    let currentSessionId = 0;
+    const sessions = {};
+    const keywords = ["公务员", "建言", "评估", "风险", "建议"];
+    let isTyping = false;
+
+    // 自动滚动到底部
+    function scrollToBottom() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.scrollTo({
+        top: chatBox.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    // 检查是否包含关键词
+    function containsKeywords(message) {
+      return keywords.some(keyword => message.includes(keyword));
+    }
+
+    // 打字机效果
+    function typeWriter(element, text, speed, callback) {
+      let i = 0;
+      function typing() {
+        if (i < text.length) {
+          element.innerHTML = text.substring(0, i + 1);
+          i++;
+          setTimeout(typing, speed);
+          scrollToBottom();
+        } else if (callback) {
+          callback();
+        }
+      }
+      typing();
+    }
+
+    // 添加用户消息
+    function addUserMessage(message) {
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.textContent = message;
+      document.getElementById("chatBox").appendChild(userMsg);
+      scrollToBottom();
+      return userMsg;
+    }
+
+    // 添加机器人回复
+    function addBotResponse(message, containsKey) {
+      if (isTyping) return;
+      
+      isTyping = true;
+      
+      // 创建"正在输入"指示器
+      const typingMsg = document.createElement("div");
+      typingMsg.className = "message bot";
+      typingMsg.innerHTML = `
+        <div class="bot-message-content">
+          <img src="Deepseek头像框.png" class="bot-icon" alt="bot-icon">
+          <span class="ellipsis"><span></span><span></span><span></span></span>
+        </div>
+      `;
+      document.getElementById("chatBox").appendChild(typingMsg);
+      scrollToBottom();
+      
+      setTimeout(() => {
+        typingMsg.remove();
+        
+        // 创建机器人回复容器
+        const responseContainer = document.createElement("div");
+        responseContainer.className = "message bot";
+        responseContainer.innerHTML = `
+          <div class="bot-message-content">
+            <img src="Deepseek头像框.png" class="bot-icon" alt="bot-icon">
+            <div class="bot-text" id="botResponse"></div>
+          </div>
+        `;
+        document.getElementById("chatBox").appendChild(responseContainer);
+        scrollToBottom();
+        
+        // 根据是否包含关键词决定回复内容
+        const fullResponse = containsKey 
+          ? `<p>你的建言内容涉及对现有服务流程进行适度优化，允许根据实际情况灵活调整服务内容与方式。实施难度较小，且团队适应难度较低，对现有服务体系的影响较小，因此建言风险较低。</p>`
+          : `<p>温馨提示：您输入的内容不在本次调查范围内或需要继续完善，请重新输入有关建言内容。示例：我是街道办事处便民服务中心的一名基层公务员，……。我希望提出一条建议：……。为了确保建言内容的安全性，请帮我评估该建言的风险等级。</p>`;
+        
+        // 使用打字机效果显示回复
+        const botResponseElement = document.getElementById("botResponse");
+        typeWriter(botResponseElement, fullResponse, 20, () => {
+          // 添加免责声明
+          const disclaimer = document.createElement("div");
+          disclaimer.className = "disclaimer";
+          disclaimer.textContent = "本回答由 AI 生成，内容仅供参考，请仔细甄别。";
+          responseContainer.appendChild(disclaimer);
+          scrollToBottom();
+          isTyping = false;
+        });
+        
+        // 保存机器人回复到会话历史
+        sessions[currentSessionId].push({ 
+          sender: "bot", 
+          text: `<div class="bot-message-content">
+                  <img src="Deepseek头像框.png" class="bot-icon" alt="bot-icon">
+                  <div class="bot-text">${fullResponse}</div>
+                </div>
+                <div class="disclaimer">本回答由 AI 生成，内容仅供参考，请仔细甄别。</div>`
+        });
+      }, 1500);
+    }
+
+    // 发送消息
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (!message || isTyping) return;
+
+      // 添加用户消息
+      addUserMessage(message);
+      
+      // 保存到当前会话
+      if (!sessions[currentSessionId]) sessions[currentSessionId] = [];
+      sessions[currentSessionId].push({ sender: "user", text: message });
+
+      // 检查是否包含关键词并添加相应回复
+      const containsKey = containsKeywords(message);
+      addBotResponse(message, containsKey);
+
+      // 清空输入框
+      input.value = "";
+    }
+
+    // 开始新对话
+    function startNewConversation() {
+      currentSessionId++;
+      document.getElementById("chatBox").innerHTML = "";
+      sessions[currentSessionId] = [];
+      scrollToBottom();
+    }
+
+    // 回车键发送消息
+    document.getElementById("userInput").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    // 页面加载时初始化
+    window.onload = function () {
+      startNewConversation();
+    };
+  </script>
+</body>
+</html>
